@@ -21,42 +21,6 @@ func init() {
 	}
 }
 
-// func testDB() error {
-
-// 	err := godotenv.Load()
-
-// 	user := os.Getenv("user")
-// 	password := os.Getenv("password")
-// 	host := os.Getenv("host")
-// 	port := os.Getenv("port")
-// 	dbname := os.Getenv("dbname")
-
-// 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, host, port, dbname))
-
-// 	if err != nil {
-// 		fmt.Println("error validating sql.Open arguments")
-// 		panic(err.Error())
-// 	}
-
-// 	defer db.Close()
-
-// 	err = db.Ping()
-
-// 	if err != nil {
-// 		fmt.Println("error verifying connection with db.Ping")
-// 		panic(err.Error())
-// 	}
-
-// 	// insert, err := db.Query("INSERT INTO `razzzila`.`currencies_exchange_rates` (`id`,`currency_id`,`target_currency_id`,`exchange_rate`,`rate_source_id`,`created_at`,`updated_at`) VALUES ('9','99','999','3','9','2024-12-12 23:24:25','2025-12-13 22:23:24');")
-// 	// if err != nil {
-// 	// 	panic(err.Error())
-// 	// }
-// 	// defer insert.Close()
-
-// 	// fmt.Println("Successful insertion")
-// 	return nil
-// }
-
 var (
 	addr = flag.String("addr", ":8000", "TCP address to listen to")
 )
