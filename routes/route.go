@@ -1,18 +1,33 @@
-package main
+package routes
 
 import (
+	"context"
+	"currency-conversion/services"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
+
+type RouterHead struct {
+	MSQ  *services.Mysql
+	Addr *string
+}
+
+type Router struct {
+	Router *fiber.App
+	MSQ    *services.Mysql
+}
+
+type Route struct {
+	Group fiber.Router
+	MSQ   *services.Mysql
+}
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -20,30 +35,19 @@ func init() {
 	}
 }
 
-var (
-	addr = flag.String("addr", ":8000", "TCP address to listen to")
-)
-
-func main() {
-	//flag.Parse()
-
-	//routes.Routes(addr)
-
-	//currency_codes := []string{}
-
-	// testDB()
-
-	err := godotenv.Load()
-
+func Routes(addr *string) {
+	mysql, err := services.NewMySQL(context.Background())
 	if err != nil {
-		fmt.Println("Error when uploading a file .env")
-		return
+		log.Fatal().Err(err)
 	}
 
-	app := fiber.New()
+	router := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
+	route := Router{Router: router, MSQ: mysql}
 
+	route.V1Routes()
+
+	router.Get("/", func(c *fiber.Ctx) error {
 		url := os.Getenv("url_all_currencies")
 		method := os.Getenv("method")
 		client := &http.Client{}
@@ -79,35 +83,8 @@ func main() {
 
 		return c.SendString(string(prettiedJSON))
 	})
-	app.Listen(*addr)
-	//fmt.Println(currency_codes)
-	// create as
-	//
 
-	// for _, currencyCode := range currency_codes {
-	//go updateRate
-	// }
-
-	// fmt.Println("Hello, 世界")
-}
-
-func updateRates() {
-	// Currencyapi Service # hourly
-	// ECB Service # daily
-
-	// rates Service interface
-
-	// currency_codes := [180]string{"USD", "CAD", "CNY"}
-
-	// for _, currencyCode := range currency_codes {
-	// 	go updateRate
-	// }
-}
-
-func updateRate( /* currencyCode */ ) {
-	// get latest from API
-	// update to DB
-	// --- resave to history table
-
-	// @TODO: add event to queue (rabbitmq)
+	if err := router.Listen(*addr); err != nil {
+		log.Fatal().Err(err).Msg("Can not start http server")
+	}
 }
