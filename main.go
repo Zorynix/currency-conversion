@@ -1,7 +1,6 @@
 package main
 
 import (
-	"currency-conversion/routes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -26,10 +25,11 @@ var (
 )
 
 func main() {
+	//flag.Parse()
 
-	routes.Routes(addr)
+	//routes.Routes(addr)
 
-	currency_codes := []string{}
+	//currency_codes := []string{}
 
 	// testDB()
 
@@ -79,8 +79,8 @@ func main() {
 
 		return c.SendString(string(prettiedJSON))
 	})
-	app.Listen(":8080")
-	fmt.Println(currency_codes)
+	app.Listen(*addr)
+	//fmt.Println(currency_codes)
 	// create as
 	//
 
