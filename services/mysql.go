@@ -5,12 +5,15 @@ import (
 	"currency-conversion/models"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	"github.com/joho/godotenv"
 )
+
+type Mysql struct {
+	db *gorm.DB
+}
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -18,13 +21,7 @@ func init() {
 	}
 }
 
-type Mysql struct {
-	db *gorm.DB
-}
-
 func NewMySQL(ctx context.Context) (*Mysql, error) {
-
-	err := godotenv.Load()
 
 	DSN := os.Getenv("DSN")
 

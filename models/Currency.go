@@ -5,7 +5,7 @@ type Currency struct {
 	Code          string `json:"code"`
 	Name          string `json:"name"`
 	Symbol        string `json:"symbol"`
-	DecimalNumber string `json:"decimal_digits"`
-	Active        string `json:""`
-	MainAreaId    string `json:""`
+	DecimalNumber int    `json:"decimal_digits"`
+	Active        bool
+	MainAreaId    int
 }

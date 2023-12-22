@@ -1,11 +1,13 @@
 package models
 
+import "time"
+
 type CurrenciesExchangeRates struct {
 	Id              int
 	CurrencyId      int
 	TargetCurencyId int
-	ExchangeRate    string `json:"value"`
-	RateSourceId    string `json:""`
-	CreatedAt       string `json:""`
-	UpdatedAt       string `json:""`
+	ExchangeRate    float32 `json:"value"`
+	RateSourceId    int
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

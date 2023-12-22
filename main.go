@@ -33,6 +33,16 @@ func main() {
 
 	// testDB()
 
+	//fmt.Println(currency_codes)
+	// create as
+	//
+
+	//services.TestApi()
+
+	//flag.Parse()
+
+	//routes.Routes(addr)
+
 	err := godotenv.Load()
 
 	if err != nil {
@@ -44,17 +54,19 @@ func main() {
 
 	app.Get("/", func(c *fiber.Ctx) error {
 
-		url := os.Getenv("url_all_currencies")
-		method := os.Getenv("method")
 		client := &http.Client{}
 
-		req, err := http.NewRequest(method, url, nil)
+		method := os.Getenv("methodGet")
+		url := os.Getenv("url_all_currencies")
+
+		req, err := http.NewRequest(os.Getenv(method), url, nil)
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error when creating a request: %s", err))
 		}
 
-		apiKey := os.Getenv("API_KEY")
-		req.Header.Add("apikey", apiKey)
+		apiKEY := os.Getenv("API_KEY")
+
+		req.Header.Add("apikey", apiKEY)
 
 		res, err := client.Do(req)
 		if err != nil {
@@ -80,16 +92,13 @@ func main() {
 		return c.SendString(string(prettiedJSON))
 	})
 	app.Listen(*addr)
-	//fmt.Println(currency_codes)
-	// create as
-	//
-
-	// for _, currencyCode := range currency_codes {
-	//go updateRate
-	// }
-
-	// fmt.Println("Hello, 世界")
 }
+
+// for _, currencyCode := range currency_codes {
+//go updateRate
+// }
+
+// fmt.Println("Hello, 世界")
 
 func updateRates() {
 	// Currencyapi Service # hourly
