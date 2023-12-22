@@ -21,7 +21,10 @@ func init() {
 }
 
 var (
-	addr = flag.String("addr", ":8000", "TCP address to listen to")
+	addr                      = flag.String("addr", ":8000", "TCP address to listen to")
+	url_all_currencies        = "https://api.currencyapi.com/v3/currencies"
+	url_latest_exchange_rates = "https://api.currencyapi.com/v3/latest"
+	methodGet                 = "GET"
 )
 
 func main() {
@@ -30,18 +33,6 @@ func main() {
 	//routes.Routes(addr)
 
 	//currency_codes := []string{}
-
-	// testDB()
-
-	//fmt.Println(currency_codes)
-	// create as
-	//
-
-	//services.TestApi()
-
-	//flag.Parse()
-
-	//routes.Routes(addr)
 
 	err := godotenv.Load()
 
@@ -56,10 +47,7 @@ func main() {
 
 		client := &http.Client{}
 
-		method := os.Getenv("methodGet")
-		url := os.Getenv("url_all_currencies")
-
-		req, err := http.NewRequest(os.Getenv(method), url, nil)
+		req, err := http.NewRequest(methodGet, url_all_currencies, nil)
 		if err != nil {
 			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error when creating a request: %s", err))
 		}
