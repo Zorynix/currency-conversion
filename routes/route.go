@@ -24,6 +24,7 @@ type Route struct {
 }
 
 func Routes(addr *string) {
+
 	mysql, err := services.NewMySQL(context.Background())
 	if err != nil {
 		log.Fatal().Err(err)
@@ -34,4 +35,11 @@ func Routes(addr *string) {
 	route := Router{Router: router, MSQ: mysql}
 
 	route.V1Routes()
+
+	if err := router.Listen(":8000"); err != nil {
+
+		log.Fatal().Err(err).Msg("Can not start http server")
+
+	}
+
 }

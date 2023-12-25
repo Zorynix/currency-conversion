@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,30 +12,30 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var (
+	url_all_currencies        = "https://api.currencyapi.com/v3/currencies"
+	url_latest_exchange_rates = "https://api.currencyapi.com/v3/latest"
+	methodGet                 = "GET"
+)
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Panic().Msg("No .env file found")
 	}
 }
 
-var (
-	addr                      = flag.String("addr", ":8000", "TCP address to listen to")
-	url_all_currencies        = "https://api.currencyapi.com/v3/currencies"
-	url_latest_exchange_rates = "https://api.currencyapi.com/v3/latest"
-	methodGet                 = "GET"
-)
+func TestApi() error {
 
-func TestApi() {
+	app := fiber.New()
+
 	err := godotenv.Load()
 
 	if err != nil {
 		fmt.Println("Error when uploading a file .env")
-		return
+		panic(err)
 	}
 
-	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/api", func(c *fiber.Ctx) error {
 
 		client := &http.Client{}
 
@@ -72,5 +71,13 @@ func TestApi() {
 
 		return c.SendString(string(prettiedJSON))
 	})
-	app.Listen(*addr)
+
+	if err := app.Listen(":8080"); err != nil {
+
+		log.Fatal().Err(err).Msg("Can not start http server")
+
+	}
+
+	return nil
+
 }

@@ -39,3 +39,15 @@ CREATE TABLE IF NOT EXISTS razzzila.currencies_exchange_rates_history
 
     PRIMARY KEY (id)
 );
+
+
+DROP TABLE IF EXISTS razzzila.testing;
+CREATE TABLE IF NOT EXISTS razzzila.testing
+(
+    id INT,
+    code VARCHAR(255),
+    active BOOLEAN,
+    main_area_id INT,
+
+    PRIMARY KEY (id)
+);

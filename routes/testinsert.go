@@ -7,7 +7,7 @@ import (
 )
 
 func (route *Route) TestInsertRoute() {
-	route.Group.Get("/test", func(c *fiber.Ctx) error {
+	route.Group.Get("/insert", func(c *fiber.Ctx) error {
 		view := views.View{Ctx: c, MSQ: route.MSQ}
 		return view.TestInsertView()
 	})
