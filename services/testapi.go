@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
@@ -24,9 +23,7 @@ func init() {
 	}
 }
 
-func TestApi() error {
-
-	app := fiber.New()
+func TestApi() ([]byte, error) {
 
 	err := godotenv.Load()
 
@@ -35,49 +32,37 @@ func TestApi() error {
 		panic(err)
 	}
 
-	app.Get("/api", func(c *fiber.Ctx) error {
+	client := &http.Client{}
 
-		client := &http.Client{}
-
-		req, err := http.NewRequest(methodGet, url_all_currencies, nil)
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error when creating a request: %s", err))
-		}
-
-		apiKEY := os.Getenv("API_KEY")
-
-		req.Header.Add("apikey", apiKEY)
-
-		res, err := client.Do(req)
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error when executing a request: %s", err))
-		}
-		defer res.Body.Close()
-
-		body, err := io.ReadAll(res.Body)
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error reading data from the response: %s", err))
-		}
-
-		var result map[string]interface{}
-		if err := json.Unmarshal(body, &result); err != nil {
-			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error during JSON parsing: %s", err))
-		}
-
-		prettiedJSON, err := json.MarshalIndent(result, "", "  ")
-		if err != nil {
-			return c.Status(http.StatusInternalServerError).SendString(fmt.Sprintf("Error when formatting JSON: %s", err))
-		}
-
-		return c.SendString(string(prettiedJSON))
-	})
-
-	if err := app.Listen(":8080"); err != nil {
-
-		log.Fatal().Err(err).Msg("Can not start http server")
-
+	req, err := http.NewRequest(methodGet, url_all_currencies, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error when creating a request: %s", err)
 	}
 
-	return nil
+	apiKEY := os.Getenv("API_KEY")
 
+	req.Header.Add("apikey", apiKEY)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("Error when executing a request: %s", err)
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading data from the response: %s", err)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("Error during JSON parsing: %s", err)
+	}
+
+	prettiedJSON, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("Error when formatting JSON: %s", err)
+	}
+
+	return prettiedJSON, nil
 }

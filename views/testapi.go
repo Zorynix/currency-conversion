@@ -9,10 +9,11 @@ import (
 
 func (view *View) TestApiView() error {
 
-	err := services.TestApi()
+	data, err := services.TestApi()
 	if err != nil {
 		log.Info().Err(err).Msg("")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
-	return err
+
+	return view.Ctx.SendString(string(data))
 }
