@@ -12,3 +12,10 @@ func (route *Route) TestApiRoute() {
 		return view.TestApiView()
 	})
 }
+
+func (route *Route) TestInsertRoute() {
+	route.Group.Get("/insert", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, MSQ: route.MSQ}
+		return view.TestInsertView()
+	})
+}
