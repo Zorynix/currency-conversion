@@ -6,7 +6,7 @@ type CurrencyExchangeRateHistory struct {
 	Id              int
 	CurrencyId      int
 	TargetCurencyId int
-	ExchangeRate    float32 `json:"value"`
+	ExchangeRate    float32
 	RateSourceId    int
-	UpdateDate      time.Time `json:"last_updated_at"`
+	UpdateDate      time.Time
 }

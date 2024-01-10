@@ -2,6 +2,8 @@ package models
 
 import "time"
 
+//структура структур
+
 type CurrenciesExchangeRates struct {
 	Id              int
 	CurrencyId      int

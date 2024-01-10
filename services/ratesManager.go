@@ -1,7 +1,6 @@
 package services
 
 import (
-	"currency-conversion/models"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -24,7 +23,7 @@ func init() {
 	}
 }
 
-func TestApi() ([]byte, error) {
+func (MSQ *Mysql) TestApi() ([]byte, error) {
 
 	err := godotenv.Load()
 
@@ -60,33 +59,25 @@ func TestApi() ([]byte, error) {
 		return nil, fmt.Errorf("Error during JSON parsing: %s", err)
 	}
 
+	//date, err := time.Parse(time.RFC3339, result["meta"].(map[string]interface{})["last_updated_at"].(string))
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	prettiedJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("Error when formatting JSON: %s", err)
 	}
+	//fmt.Println(date)
+
+	//MSQ.db.Save(models.CurrenciesExchangeRates{Id: 300523, CurrencyId: 1001, TargetCurencyId: 9999, ExchangeRate: 30001, RateSourceId: 99, CreatedAt: time.Now(), UpdatedAt: date})
 
 	return prettiedJSON, nil
 }
 
 func (MSQ *Mysql) TestInsert() error {
 
-	// const layout = "2006-01-02 15:04:05"
-	// createdAtStr := "22-12-2023 15:49:30"
-	// updatedAtStr := "25-01-2024 12:30:30"
-
-	// createdAt, err := time.Parse(layout, createdAtStr)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// updatedAt, err := time.Parse(layout, updatedAtStr)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// MSQ.db.Save(models.CurrenciesExchangeRates{Id: 919, CurrencyId: 32, TargetCurencyId: 12, ExchangeRate: 0.3341324, RateSourceId: 3411, CreatedAt: createdAt, UpdatedAt: updatedAt})
-
-	MSQ.db.Save(models.Test{Id: 19991, Code: "BOBIK", Active: false, MainAreaId: 9910})
 	return nil
 }
 

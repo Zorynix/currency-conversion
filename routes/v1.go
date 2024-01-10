@@ -5,6 +5,5 @@ func (router *Router) V1Routes() {
 
 	route := Route{Group: v1, MSQ: router.MSQ}
 
-	route.TestInsertRoute()
 	route.TestApiRoute()
 }

@@ -32,7 +32,7 @@ func NewMySQL(ctx context.Context) (*Mysql, error) {
 		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
 	}
 
-	err = conn.AutoMigrate(&models.CurrencyExchangeRateHistory{}, &models.CurrenciesExchangeRates{}, &models.Currency{}, &models.Test{})
+	err = conn.AutoMigrate(&models.CurrencyExchangeRateHistory{}, &models.CurrenciesExchangeRates{}, &models.Currency{})
 	if err != nil {
 		log.Fatal().Interface("unable to automigrate: %v", err).Msg("")
 	}
