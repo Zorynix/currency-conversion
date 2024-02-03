@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 	"currency-conversion/models"
+	"currency-conversion/utils"
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -15,13 +15,9 @@ type Mysql struct {
 	db *gorm.DB
 }
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Panic().Msg("No .env file found")
-	}
-}
-
 func NewMySQL(ctx context.Context) (*Mysql, error) {
+
+	utils.LoadEnv()
 
 	DSN := os.Getenv("DSN")
 

@@ -1,7 +1,12 @@
 package dto
 
-import "currency-conversion/models"
+import (
+	"currency-conversion/models"
+
+	"gorm.io/gorm"
+)
 
 type DataLatestExchangeRates struct {
-	Data map[string]models.CurrenciesExchangeRates `json:"data"`
+	gorm.Model
+	Data map[string]models.CurrenciesExchangeRates `gorm:"serializer:json" json:"data"`
 }

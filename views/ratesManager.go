@@ -7,25 +7,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (view *View) TestInsertView() error {
-
-	err := view.MSQ.TestInsert()
-	if err != nil {
-		log.Info().Err(err).Msg("")
-		return fiber.NewError(fiber.StatusBadGateway)
-	}
-	return err
-}
-
 func (view *View) TestApiView() error {
 
-	dataAllCurrencies, err := view.MSQ.TestApiAllCurrencies()
+	dataAllCurrencies, err := view.MSQ.InsertAllCurrencies()
 	if err != nil {
 		log.Info().Err(err).Msg("")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 
-	dataLatestExchangeRates, err := view.MSQ.LatestExchangeRates()
+	dataLatestExchangeRates, err := view.MSQ.InsertLatestExchangeRates()
 	if err != nil {
 		log.Info().Err(err).Msg("")
 		return fiber.NewError(fiber.StatusBadGateway)

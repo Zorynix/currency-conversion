@@ -1,14 +1,18 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 //структура структур
 
 type CurrenciesExchangeRates struct {
-	Id              int
+	gorm.Model
 	CurrencyId      int
 	TargetCurencyId int
-	ExchangeRate    float32 `json:"value"`
+	ExchangeRate    float32 `gorm:"serializer:json" json:"value"`
 	RateSourceId    int
 	CreatedAt       time.Time
 	UpdatedAt       time.Time

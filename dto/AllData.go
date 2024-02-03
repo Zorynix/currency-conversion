@@ -1,6 +1,9 @@
 package dto
 
+import "gorm.io/gorm"
+
 type AllData struct {
-	DataAllCurrencies       DataAllCurrencies       `json:"currentDataAllCurrencies"`
-	DataLatestExchangeRates DataLatestExchangeRates `json:"currentDataLatestExchangeRates"`
+	gorm.Model
+	DataAllCurrencies       DataAllCurrencies       `gorm:"serializer:json" json:"DataAllCurrencies"`
+	DataLatestExchangeRates DataLatestExchangeRates `gorm:"serializer:json" json:"DataLatestExchangeRates"`
 }

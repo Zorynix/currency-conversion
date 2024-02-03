@@ -1,9 +1,13 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type CurrencyExchangeRateHistory struct {
-	Id              int
+	gorm.Model
 	CurrencyId      int
 	TargetCurencyId int
 	ExchangeRate    float32
