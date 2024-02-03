@@ -11,6 +11,7 @@
 *.dylib
 .env
 .air.toml
+.air
 tmp
 .tmp
 # Test binary, built with `go test -c`
