@@ -31,8 +31,10 @@ func (MSQ *Mysql) InsertLatestExchangeRates() (*dto.DataLatestExchangeRates, err
 
 func (MSQ *Mysql) AllCurrencies() (*dto.DataAllCurrencies, error) {
 
-	utils.LoadEnv()
+	var data dto.DataAllCurrencies
+	var allCurrenciesData []models.Currency
 
+	utils.LoadEnv()
 	client := utils.Default()
 	client.PrivateToken = os.Getenv("API_KEY")
 
@@ -41,16 +43,14 @@ func (MSQ *Mysql) AllCurrencies() (*dto.DataAllCurrencies, error) {
 		return nil, fmt.Errorf("Error when creating a request: %s", err)
 	}
 
-	var data dto.DataAllCurrencies
 	if err := json.Unmarshal(res.Body(), &data); err != nil {
 		return nil, fmt.Errorf("Error during JSON parsing: %s", err)
 	}
 
-	var allCurrenciesData []models.Currency
-
 	for _, value := range data.Data {
 		allCurrenciesData = append(allCurrenciesData, value)
 	}
+
 	MSQ.db.Save(&allCurrenciesData)
 
 	return &data, nil
@@ -58,30 +58,28 @@ func (MSQ *Mysql) AllCurrencies() (*dto.DataAllCurrencies, error) {
 
 func (MSQ *Mysql) LatestExchangeRates() (*dto.DataLatestExchangeRates, error) {
 
+	var data dto.DataLatestExchangeRates
+	var LatestExchangeData []models.CurrenciesExchangeRates
+
 	utils.LoadEnv()
 	client := utils.Default()
 	client.PrivateToken = os.Getenv("API_KEY")
+
 	res, err := client.FastGet(os.Getenv("URL_latest_exchange_rates"))
 	if err != nil {
 		return nil, fmt.Errorf("Error when creating a request: %s", err)
 	}
 
-	var data dto.DataLatestExchangeRates
 	if err := json.Unmarshal(res.Body(), &data); err != nil {
 		return nil, fmt.Errorf("Error during JSON parsing: %s", err)
 	}
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	var LatestExchangeData []models.CurrenciesExchangeRates
 
 	for _, value := range data.Data {
 		LatestExchangeData = append(LatestExchangeData, value)
 	}
 
 	MSQ.db.Save(&LatestExchangeData)
+
 	return &data, nil
 }
 
