@@ -4,7 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type CurrencyExchangeRateHistory struct {
+type CurrenciesExchangeRateHistory struct {
 	gorm.Model
 	CurrencyId       int
 	TargetCurrencyId int

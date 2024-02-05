@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS razzzila.currencies;
 DROP TABLE IF EXISTS razzzila.currencies_exchange_rates;
 DROP TABLE IF EXISTS razzzila.currency_exchange_rate_histories;
+DROP TABLE IF EXISTS razzzila.currencies_exchange_rate_histories;
 
 
 CREATE TABLE IF NOT EXISTS razzzila.currencies

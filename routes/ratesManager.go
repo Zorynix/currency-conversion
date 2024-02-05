@@ -6,9 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (route *Route) TestApiRoute() {
+func (route *Route) ApiRoute() {
 	route.Group.Get("/api", func(c *fiber.Ctx) error {
 		view := views.View{Ctx: c, MSQ: route.MSQ}
-		return view.TestApiView()
+		return view.ApiView()
 	})
 }

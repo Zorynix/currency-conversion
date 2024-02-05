@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (view *View) TestApiView() error {
+func (view *View) ApiView() error {
 
 	dataAllCurrencies, err := view.MSQ.InsertAllCurrencies()
 	if err != nil {
