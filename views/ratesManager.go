@@ -1,28 +1,38 @@
 package views
 
 import (
-	"currency-conversion/dto"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-func (view *View) ApiView() error {
+func (view *View) CurrenciesView() error {
 
-	dataAllCurrencies, err := view.MSQ.InsertAllCurrencies()
+	dataCurrencies, err := view.MSQ.InsertCurrencies()
 	if err != nil {
 		log.Info().Err(err).Msg("")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 
-	dataLatestExchangeRates, err := view.MSQ.InsertLatestExchangeRates()
+	return view.Ctx.JSON(*dataCurrencies)
+}
+
+func (view *View) ExchangeRateView() error {
+
+	dataLatestExchangeRates, err := view.MSQ.InsertExchangeRates()
 	if err != nil {
 		log.Info().Err(err).Msg("")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 
-	return view.Ctx.JSON(dto.AllData{
-		DataAllCurrencies:       *dataAllCurrencies,
-		DataLatestExchangeRates: *dataLatestExchangeRates,
-	})
+	return view.Ctx.JSON(*dataLatestExchangeRates)
+}
+
+func (view *View) RateHistoryView() error {
+
+	dataRateHistory, err := view.MSQ.UpdateRates()
+	if err != nil {
+		log.Info().Err(err).Msg("")
+		return fiber.NewError(fiber.StatusBadGateway)
+	}
+	return view.Ctx.JSON(*dataRateHistory)
 }

@@ -6,9 +6,23 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (route *Route) ApiRoute() {
-	route.Group.Get("/api", func(c *fiber.Ctx) error {
+func (route *Route) ApiExchangeRateRoute() {
+	route.Group.Get("/rates", func(c *fiber.Ctx) error {
 		view := views.View{Ctx: c, MSQ: route.MSQ}
-		return view.ApiView()
+		return view.ExchangeRateView()
+	})
+}
+
+func (route *Route) ApiCurrenciesRoute() {
+	route.Group.Get("/currencies", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, MSQ: route.MSQ}
+		return view.CurrenciesView()
+	})
+}
+
+func (route *Route) ApiUpdateRates() {
+	route.Group.Get("/update", func(c *fiber.Ctx) error {
+		view := views.View{Ctx: c, MSQ: route.MSQ}
+		return view.RateHistoryView()
 	})
 }

@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type DataAllCurrencies struct {
+type Currencies struct {
 	gorm.Model
 	Data map[string]models.Currency `gorm:"serializer:json" json:"data"`
 }
