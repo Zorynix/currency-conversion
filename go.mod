@@ -10,6 +10,8 @@ require (
 	gorm.io/gorm v1.25.5
 )
 
+require golang.org/x/tools v0.17.0 // indirect
+
 require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect

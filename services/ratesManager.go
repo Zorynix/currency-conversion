@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// @TODO: сделать получение конкретной валюты + вставка в history и обновление текущих
+// @TODO: add receiving of a specific currency
 
 func (MSQ *Mysql) GetCurrencies() (*dto.Currencies, error) {
 
@@ -84,7 +84,6 @@ func (MSQ *Mysql) InsertExchangeRates() (*dto.ExchangeRates, error) {
 		ExchangeRateData = append(ExchangeRateData, value)
 	}
 
-	//MSQ.db.Model(&models.ExchangeRates{}).Updates(ExchangeRateData)
 	MSQ.db.Save(&ExchangeRateData)
 
 	return data, nil
@@ -114,12 +113,6 @@ func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRateHistory, error) {
 	if _, err := MSQ.InsertExchangeRates(); err != nil {
 		return nil, fmt.Errorf("error updating exchange rates: %s", err)
 	}
-
-	// if err := MSQ.db.Select("*").Find(&data).Error; err != nil {
-	// 	return nil, fmt.Errorf("error fetching exchange rate history: %s", err)
-	// }
-
-	// fmt.Println(data)
 
 	return &data, nil
 }

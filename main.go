@@ -2,6 +2,7 @@ package main
 
 import (
 	"currency-conversion/routes"
+	"currency-conversion/utils"
 	"flag"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,7 +15,7 @@ var (
 func main() {
 
 	flag.Parse()
-
+	utils.InitLogger()
 	routes.Routes(addr)
 	//currency_codes := []string{}
 
