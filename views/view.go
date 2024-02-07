@@ -9,4 +9,5 @@ import (
 type View struct {
 	Ctx *fiber.Ctx
 	MSQ *services.Mysql
+	App *fiber.App
 }

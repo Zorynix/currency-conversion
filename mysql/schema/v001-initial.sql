@@ -1,41 +1,36 @@
-DROP TABLE IF EXISTS razzzila.currencies_currencies;
-DROP TABLE IF EXISTS razzzila.currencies_exchange_rates;
-DROP TABLE IF EXISTS razzzila.currencies_exchange_rates_history;
+DROP TABLE IF EXISTS razzzila.currencies;
+DROP TABLE IF EXISTS razzzila.exchange_rates;
+DROP TABLE IF EXISTS razzzila.exchange_rate_histories;
 
-CREATE TABLE IF NOT EXISTS razzzila.currencies_currencies
+
+CREATE TABLE IF NOT EXISTS razzzila.currencies
 (
-    id INT,
-    code VARCHAR(3),
+    code VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255),
-    symbol VARCHAR(10),
-    decimal_number SMALLINT,
+    symbol_native VARCHAR(10),
+    decimal_digits INT,
     active BOOLEAN,
-    main_area_id INT,
-
-    PRIMARY KEY (id)
+    main_area_id INT
 );
 
-CREATE TABLE IF NOT EXISTS razzzila.currencies_exchange_rates
+CREATE TABLE IF NOT EXISTS razzzila.exchange_rates
 (
-    id INT,
-    currency_id SMALLINT,
-    target_currency_id SMALLINT,
-    exchange_rate TINYINT,
-    rate_source_id SMALLINT,
+    code VARCHAR(255) PRIMARY KEY,
+    currency_id INT,
+    target_currency_id INT,
+    exchange_rate FLOAT,
+    rate_source_id INT,
     created_at DateTime,
     updated_at DateTime,
-
-    PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS razzzila.currencies_exchange_rates_history
+CREATE TABLE IF NOT EXISTS razzzila.exchange_rate_histories
 (
-    id INT,
-    currency_id SMALLINT,
-    target_currency_id SMALLINT,
-    exchange_rate TINYINT,
-    rate_source_id SMALLINT,
-    update_date DateTime,
-
-    PRIMARY KEY (id)
+    code VARCHAR(255) PRIMARY KEY,
+    currency_id INT,
+    target_currency_id INT,
+    exchange_rate FLOAT,
+    rate_source_id INT,
+    created_at DateTime,
+    updated_at DateTime,
 );

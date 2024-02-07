@@ -1,11 +1,19 @@
 package models
 
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type Currency struct {
-	Id            int
-	Code          string `json:"code"`
+	Code          string `gorm:"primaryKey" json:"code"`
 	Name          string `json:"name"`
-	Symbol        string `json:"symbol"`
-	DecimalNumber string `json:"decimal_digits"`
-	Active        string `json:""`
-	MainAreaId    string `json:""`
+	SymbolNative  string `json:"symbol_native"`
+	DecimalDigits int    `json:"decimal_digits"`
+	Active        bool
+	MainAreaId    int
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }

@@ -3,20 +3,13 @@ package services
 import (
 	"context"
 	"currency-conversion/models"
+	"currency-conversion/utils"
 	"os"
 
 	"github.com/rs/zerolog/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-
-	"github.com/joho/godotenv"
 )
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Panic().Msg("No .env file found")
-	}
-}
 
 type Mysql struct {
 	db *gorm.DB
@@ -24,7 +17,7 @@ type Mysql struct {
 
 func NewMySQL(ctx context.Context) (*Mysql, error) {
 
-	err := godotenv.Load()
+	utils.LoadEnv()
 
 	DSN := os.Getenv("DSN")
 
@@ -35,7 +28,7 @@ func NewMySQL(ctx context.Context) (*Mysql, error) {
 		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
 	}
 
-	err = conn.AutoMigrate(&models.CurrencyExchangeRateHistory{}, &models.CurrenciesExchangeRates{}, &models.Currency{})
+	err = conn.AutoMigrate(&models.ExchangeRateHistory{}, &models.ExchangeRates{}, &models.Currency{})
 	if err != nil {
 		log.Fatal().Interface("unable to automigrate: %v", err).Msg("")
 	}

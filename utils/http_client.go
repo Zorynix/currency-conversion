@@ -53,7 +53,7 @@ func (c *HttpClient) FastGet(requestURI string) (*fasthttp.Response, error) {
 	request.Header.Add(fasthttp.HeaderUserAgent, c.UserAgent)
 	request.Header.Add("Transaction-Id", c.TransactionID)
 	request.Header.Add(fasthttp.HeaderAccept, c.Accept)
-	request.Header.Add("PRIVATE-TOKEN", c.PrivateToken)
+	request.Header.Add("apikey", c.PrivateToken)
 	request.Header.SetMethod(fasthttp.MethodGet)
 
 	if c.Debug {
