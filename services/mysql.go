@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"currency-conversion/dto"
 	"currency-conversion/models"
 	"currency-conversion/utils"
 	"os"
@@ -11,11 +12,21 @@ import (
 	"gorm.io/gorm"
 )
 
-type Mysql struct {
-	db *gorm.DB
+type Database interface {
+	Ping(ctx context.Context) error
+
+	GetCurrencies() (*dto.Currencies, error)
+	InsertCurrencies() (*dto.Currencies, error)
+	GetExchangeRates() (*dto.ExchangeRates, error)
+	UpdateRates() (*dto.ExchangeRateHistory, error)
+	InsertExchangeRates() (*dto.ExchangeRates, error)
 }
 
-func NewMySQL(ctx context.Context) (*Mysql, error) {
+type Mysql struct {
+	DB *gorm.DB
+}
+
+func NewMySQL(ctx context.Context) (Database, error) {
 
 	utils.LoadEnv()
 
@@ -33,11 +44,11 @@ func NewMySQL(ctx context.Context) (*Mysql, error) {
 		log.Fatal().Interface("unable to automigrate: %v", err).Msg("")
 	}
 
-	return &Mysql{db: conn}, nil
+	return &Mysql{DB: conn}, nil
 }
 
 func (msq *Mysql) Ping(ctx context.Context) error {
-	db, err := msq.db.DB()
+	db, err := msq.DB.DB()
 	if err != nil {
 		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
 	}
@@ -47,7 +58,7 @@ func (msq *Mysql) Ping(ctx context.Context) error {
 
 func (msq *Mysql) Close() {
 
-	db, err := msq.db.DB()
+	db, err := msq.DB.DB()
 	if err != nil {
 		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
 	}

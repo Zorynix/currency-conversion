@@ -8,6 +8,6 @@ import (
 
 type View struct {
 	Ctx *fiber.Ctx
-	MSQ *services.Mysql
+	MSQ services.Database
 	App *fiber.App
 }

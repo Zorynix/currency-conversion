@@ -17,6 +17,5 @@ func main() {
 	flag.Parse()
 	utils.InitLogger()
 	routes.Routes(addr)
-	//currency_codes := []string{}
 
 }

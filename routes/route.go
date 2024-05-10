@@ -9,18 +9,18 @@ import (
 )
 
 type RouterHead struct {
-	MSQ  *services.Mysql
+	MSQ  services.Database
 	Addr *string
 }
 
 type Router struct {
 	Router *fiber.App
-	MSQ    *services.Mysql
+	MSQ    services.Database
 }
 
 type Route struct {
 	Group fiber.Router
-	MSQ   *services.Mysql
+	MSQ   services.Database
 }
 
 func Routes(addr *string) {
@@ -36,10 +36,9 @@ func Routes(addr *string) {
 
 	route.V1Routes()
 
+	log.Info().Msgf("Starting server on port %d...", 8000)
 	if err := router.Listen(":8000"); err != nil {
-
 		log.Fatal().Err(err).Msg("Can not start http server")
-
 	}
 
 }
