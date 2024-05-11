@@ -18,7 +18,7 @@ type Database interface {
 	GetCurrencies() (*dto.Currencies, error)
 	AddCurrencies() (*dto.Currencies, error)
 	GetExchangeRates() (*dto.ExchangeRates, error)
-	UpdateRates() (*dto.ExchangeRates, error)
+	UpdateRates() (string, error)
 	AddRates() (*dto.ExchangeRates, error)
 }
 

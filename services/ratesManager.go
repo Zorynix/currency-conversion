@@ -147,23 +147,22 @@ func (MSQ *Mysql) AddRates() (*dto.ExchangeRates, error) {
 
 //@TODO: sheduled updates
 
-func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRates, error) {
+func (MSQ *Mysql) UpdateRates() (string, error) {
 	log.Info().Msg("UpdateRates called")
 	log.Debug().Msg("Starting UpdateRates method")
 	defer log.Debug().Msg("UpdateRates method completed")
 
 	var count int64
-	var data dto.ExchangeRates
 
 	tx := MSQ.DB.Begin()
 	if tx.Error != nil {
-		return nil, tx.Error
+		return "", tx.Error
 	}
 
 	if err := tx.Model(&models.ExchangeRates{}).Count(&count).Error; err != nil {
 		tx.Rollback()
 		log.Error().Err(err).Msg("Failed to count exchange rate histories")
-		return nil, fmt.Errorf("error counting exchange rate histories: %s", err)
+		return "", fmt.Errorf("error counting exchange rate histories: %s", err)
 	}
 
 	if count == 0 {
@@ -171,7 +170,7 @@ func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRates, error) {
 		if err := tx.Exec("INSERT INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil {
 			tx.Rollback()
 			log.Error().Err(err).Msg("Failed to insert initial exchange rate histories")
-			return nil, fmt.Errorf("error inserting initial exchange rate histories: %s", err)
+			return "", fmt.Errorf("error inserting initial exchange rate histories: %s", err)
 		}
 		log.Info().Msg("Initial exchange rate histories inserted successfully")
 	} else {
@@ -187,7 +186,7 @@ func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRates, error) {
     `).Error; err != nil {
 			tx.Rollback()
 			log.Error().Err(err).Msg("Failed to update exchange rate histories")
-			return nil, fmt.Errorf("error updating exchange rate histories: %s", err)
+			return "", fmt.Errorf("error updating exchange rate histories: %s", err)
 		}
 		log.Info().Msg("Exchange rate histories updated successfully")
 	}
@@ -197,10 +196,10 @@ func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRates, error) {
 	if _, err := MSQ.AddRates(); err != nil {
 		tx.Rollback()
 		log.Error().Err(err).Msg("Failed to insert latest exchange rates")
-		return nil, fmt.Errorf("error inserting latest exchange rates: %s", err)
+		return "", fmt.Errorf("error inserting latest exchange rates: %s", err)
 	}
 
-	return &data, nil
+	return "Exchange rates updated successfully", nil
 }
 
 // @TODO: add event to queue (rabbitmq)

@@ -32,10 +32,10 @@ func (view *View) ExchangeRateView() error {
 func (view *View) RateHistoryView() error {
 
 	log.Info().Msg("RateHistoryView called")
-	dataRateHistory, err := view.MSQ.UpdateRates()
+	message, err := view.MSQ.UpdateRates()
 	if err != nil {
 		log.Error().Err(err).Msg("Error in UpdateRates")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
-	return view.Ctx.JSON(*dataRateHistory)
+	return view.Ctx.SendString(message)
 }
