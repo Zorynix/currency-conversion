@@ -9,11 +9,13 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm/clause"
 )
 
 // @TODO: add receiving of a specific currency
 
 func (MSQ *Mysql) GetCurrencies() (*dto.Currencies, error) {
+	log.Info().Msg("GetCurrencies called")
 	log.Debug().Msg("Starting GetCurrencies method")
 	defer log.Debug().Msg("GetCurrencies method completed")
 
@@ -38,11 +40,10 @@ func (MSQ *Mysql) GetCurrencies() (*dto.Currencies, error) {
 	return &data, nil
 }
 
-func (MSQ *Mysql) InsertCurrencies() (*dto.Currencies, error) {
-	log.Debug().Msg("Starting InsertCurrencies method")
-	defer log.Debug().Msg("InsertCurrencies method completed")
-
-	var CurrenciesData []models.Currency
+func (MSQ *Mysql) AddCurrencies() (*dto.Currencies, error) {
+	log.Info().Msg("AddCurrencies called")
+	log.Debug().Msg("Starting AddCurrencies method")
+	defer log.Debug().Msg("AddCurrencies method completed")
 
 	data, err := MSQ.GetCurrencies()
 	if err != nil {
@@ -50,18 +51,28 @@ func (MSQ *Mysql) InsertCurrencies() (*dto.Currencies, error) {
 		return nil, fmt.Errorf("error fetching currencies: %s", err)
 	}
 
-	for _, value := range data.Data {
-		CurrenciesData = append(CurrenciesData, value)
+	tx := MSQ.DB.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 
-	log.Debug().Interface("CurrenciesToInsert", CurrenciesData).Msg("Ready to insert currencies data")
-	MSQ.DB.Save(&CurrenciesData)
-	log.Info().Msg("Currencies data inserted into database successfully")
+	for _, value := range data.Data {
+		if err := tx.Clauses(clause.OnConflict{
+			UpdateAll: true,
+		}).Create(&value).Error; err != nil {
+			tx.Rollback()
+			log.Error().Err(err).Msg("Failed to add or update currency")
+			return nil, fmt.Errorf("error adding or updating currency: %s", err)
+		}
+	}
+	tx.Commit()
+	log.Info().Msg("Currencies data inserted or updated in database successfully")
 
 	return data, nil
 }
 
 func (MSQ *Mysql) GetExchangeRates() (*dto.ExchangeRates, error) {
+	log.Info().Msg("GetExchangeRates called")
 	log.Debug().Msg("Starting GetExchangeRates method")
 	defer log.Debug().Msg("GetExchangeRates method completed")
 
@@ -88,13 +99,10 @@ func (MSQ *Mysql) GetExchangeRates() (*dto.ExchangeRates, error) {
 	return &data, nil
 }
 
-func (MSQ *Mysql) InsertExchangeRates() (*dto.ExchangeRates, error) {
-	log.Debug().Msg("Starting InsertExchangeRates method")
-	defer log.Debug().Msg("InsertExchangeRates method completed")
-
-	log.Info().Msg("InsertExchangeRates called")
-
-	var ExchangeRateData []models.ExchangeRates
+func (MSQ *Mysql) AddRates() (*dto.ExchangeRates, error) {
+	log.Info().Msg("AddRates called")
+	log.Debug().Msg("Starting AddRates method")
+	defer log.Debug().Msg("AddRates method completed")
 
 	data, err := MSQ.GetExchangeRates()
 	if err != nil {
@@ -102,50 +110,92 @@ func (MSQ *Mysql) InsertExchangeRates() (*dto.ExchangeRates, error) {
 		return nil, fmt.Errorf("error fetching exchange rates: %s", err)
 	}
 
-	for _, value := range data.Data {
-		ExchangeRateData = append(ExchangeRateData, value)
+	tx := MSQ.DB.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 
-	log.Debug().Interface("ExchangeRatesToInsert", ExchangeRateData).Msg("Ready to insert exchange rates data")
-	MSQ.DB.Save(&ExchangeRateData)
-	log.Info().Msg("Exchange rates data inserted into database successfully")
+	var count int64
+	if err := tx.Model(&models.ExchangeRates{}).Count(&count).Error; err != nil {
+		tx.Rollback()
+		log.Error().Err(err).Msg("Failed to count exchange rates")
+		return nil, fmt.Errorf("error counting exchange rates: %s", err)
+	}
 
+	if count == 0 {
+		for _, rate := range data.Data {
+			if err := tx.Create(&rate).Error; err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Msg("Failed to add exchange rates")
+				return nil, fmt.Errorf("error adding exchange rates: %s", err)
+			}
+		}
+	} else {
+		for _, rate := range data.Data {
+			if err := tx.Model(&models.ExchangeRates{}).Where("code = ?", rate.Code).Updates(rate).Error; err != nil {
+				tx.Rollback()
+				log.Error().Err(err).Msg("Failed to update exchange rates")
+				return nil, fmt.Errorf("error updating exchange rates: %s", err)
+			}
+		}
+	}
+
+	tx.Commit()
+	log.Info().Msg("Exchange rates data inserted/updated into database successfully")
 	return data, nil
 }
 
 //@TODO: sheduled updates
 
-func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRateHistory, error) {
+func (MSQ *Mysql) UpdateRates() (*dto.ExchangeRates, error) {
+	log.Info().Msg("UpdateRates called")
 	log.Debug().Msg("Starting UpdateRates method")
 	defer log.Debug().Msg("UpdateRates method completed")
 
-	log.Info().Msg("UpdateRates called")
-
 	var count int64
-	var data dto.ExchangeRateHistory
+	var data dto.ExchangeRates
 
-	if err := MSQ.DB.Model(&models.ExchangeRateHistory{}).Count(&count).Error; err != nil {
+	tx := MSQ.DB.Begin()
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	if err := tx.Model(&models.ExchangeRates{}).Count(&count).Error; err != nil {
+		tx.Rollback()
 		log.Error().Err(err).Msg("Failed to count exchange rate histories")
 		return nil, fmt.Errorf("error counting exchange rate histories: %s", err)
 	}
 
 	if count == 0 {
 		log.Debug().Msg("No exchange rate histories found, inserting initial data from exchange rates")
-		if err := MSQ.DB.Exec("INSERT INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil {
+		if err := tx.Exec("INSERT INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil {
+			tx.Rollback()
 			log.Error().Err(err).Msg("Failed to insert initial exchange rate histories")
 			return nil, fmt.Errorf("error inserting initial exchange rate histories: %s", err)
 		}
 		log.Info().Msg("Initial exchange rate histories inserted successfully")
 	} else {
 		log.Debug().Msg("Exchange rate histories found, updating with latest exchange rates")
-		if err := MSQ.DB.Exec("REPLACE INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil {
+		if err := tx.Exec(`INSERT INTO exchange_rate_histories(code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at)
+        SELECT code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at
+        FROM exchange_rates
+        ON DUPLICATE KEY UPDATE
+			code = VALUES(code),
+            exchange_rate = VALUES(exchange_rate),
+            rate_source_id = VALUES(rate_source_id),
+            updated_at = VALUES(updated_at)
+    `).Error; err != nil {
+			tx.Rollback()
 			log.Error().Err(err).Msg("Failed to update exchange rate histories")
 			return nil, fmt.Errorf("error updating exchange rate histories: %s", err)
 		}
 		log.Info().Msg("Exchange rate histories updated successfully")
 	}
 
-	if _, err := MSQ.InsertExchangeRates(); err != nil {
+	tx.Commit()
+
+	if _, err := MSQ.AddRates(); err != nil {
+		tx.Rollback()
 		log.Error().Err(err).Msg("Failed to insert latest exchange rates")
 		return nil, fmt.Errorf("error inserting latest exchange rates: %s", err)
 	}

@@ -8,9 +8,9 @@ import (
 func (view *View) CurrenciesView() error {
 
 	log.Info().Msg("CurrenciesView called")
-	dataCurrencies, err := view.MSQ.InsertCurrencies()
+	dataCurrencies, err := view.MSQ.AddCurrencies()
 	if err != nil {
-		log.Error().Err(err).Msg("InsertCurrencies")
+		log.Error().Err(err).Msg("AddCurrencies")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 
@@ -20,9 +20,9 @@ func (view *View) CurrenciesView() error {
 func (view *View) ExchangeRateView() error {
 
 	log.Info().Msg("ExchangeRateView called")
-	dataLatestExchangeRates, err := view.MSQ.InsertExchangeRates()
+	dataLatestExchangeRates, err := view.MSQ.AddRates()
 	if err != nil {
-		log.Error().Err(err).Msg("Error in InsertExchangeRates")
+		log.Error().Err(err).Msg("Error in AddRates")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 

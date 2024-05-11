@@ -16,10 +16,10 @@ type Database interface {
 	Ping(ctx context.Context) error
 
 	GetCurrencies() (*dto.Currencies, error)
-	InsertCurrencies() (*dto.Currencies, error)
+	AddCurrencies() (*dto.Currencies, error)
 	GetExchangeRates() (*dto.ExchangeRates, error)
-	UpdateRates() (*dto.ExchangeRateHistory, error)
-	InsertExchangeRates() (*dto.ExchangeRates, error)
+	UpdateRates() (*dto.ExchangeRates, error)
+	AddRates() (*dto.ExchangeRates, error)
 }
 
 type Mysql struct {
@@ -39,7 +39,7 @@ func NewMySQL(ctx context.Context) (Database, error) {
 		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
 	}
 
-	err = conn.AutoMigrate(&models.ExchangeRateHistory{}, &models.ExchangeRates{}, &models.Currency{})
+	err = conn.AutoMigrate(&models.ExchangeRates{}, &models.Currency{})
 	if err != nil {
 		log.Fatal().Interface("unable to automigrate: %v", err).Msg("")
 	}
