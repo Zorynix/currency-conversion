@@ -2,9 +2,8 @@ package services
 
 import (
 	"context"
-	"currency-conversion/dto"
-	"currency-conversion/models"
 	"currency-conversion/utils"
+	"database/sql"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -12,55 +11,36 @@ import (
 	"gorm.io/gorm"
 )
 
-type Database interface {
-	Ping(ctx context.Context) error
-
-	GetCurrencies() (*dto.Currencies, error)
-	AddCurrencies() (*dto.Currencies, error)
-	GetExchangeRates() (*dto.ExchangeRates, error)
-	UpdateRates() (string, error)
-	AddRates() (*dto.ExchangeRates, error)
-}
-
 type Mysql struct {
 	DB *gorm.DB
 }
 
-func NewMySQL(ctx context.Context) (Database, error) {
+func NewMySQL(ctx context.Context) (*Mysql, error) {
 
 	utils.LoadEnv()
 
-	DSN := os.Getenv("DSN")
-
-	conn, err := gorm.Open(mysql.New(mysql.Config{
-		DSN: DSN}))
-
+	dsn := os.Getenv("DSN")
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
+		log.Error().Err(err).Msg("Failed to open SQL connection")
+		return nil, err
 	}
 
-	err = conn.AutoMigrate(&models.ExchangeRates{}, &models.Currency{})
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
 	if err != nil {
-		log.Fatal().Interface("unable to automigrate: %v", err).Msg("")
+		log.Error().Err(err).Msg("Failed to initialize Gorm")
+		return nil, err
 	}
 
-	return &Mysql{DB: conn}, nil
+	return &Mysql{DB: gormDB}, nil
 }
 
-func (msq *Mysql) Ping(ctx context.Context) error {
-	db, err := msq.DB.DB()
-	if err != nil {
-		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
-	}
-
-	return db.Ping()
+type Database interface {
+	GetDB() *gorm.DB
 }
 
-func (msq *Mysql) Close() {
-
-	db, err := msq.DB.DB()
-	if err != nil {
-		log.Fatal().Interface("unable to create mysql connection pool: %v", err).Msg("")
-	}
-	db.Close()
+func (m *Mysql) GetDB() *gorm.DB {
+	return m.DB
 }

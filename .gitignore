@@ -10,6 +10,8 @@
 *.so
 *.dylib
 .env
+.yaml
+*.yaml
 .air.toml
 .air
 tmp

@@ -6,33 +6,28 @@ import (
 )
 
 func (view *View) CurrenciesView() error {
-
 	log.Info().Msg("CurrenciesView called")
-	dataCurrencies, err := view.MSQ.AddCurrencies()
+	data, err := view.ratesService.AddCurrencies()
 	if err != nil {
 		log.Error().Err(err).Msg("AddCurrencies")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
-
-	return view.Ctx.JSON(*dataCurrencies)
+	return view.Ctx.JSON(*data)
 }
 
 func (view *View) ExchangeRateView() error {
-
 	log.Info().Msg("ExchangeRateView called")
-	dataLatestExchangeRates, err := view.MSQ.AddRates()
+	data, err := view.ratesService.AddRates()
 	if err != nil {
 		log.Error().Err(err).Msg("Error in AddRates")
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
-
-	return view.Ctx.JSON(*dataLatestExchangeRates)
+	return view.Ctx.JSON(*data)
 }
 
 func (view *View) RateHistoryView() error {
-
 	log.Info().Msg("RateHistoryView called")
-	message, err := view.MSQ.UpdateRates()
+	message, err := view.ratesService.UpdateRates()
 	if err != nil {
 		log.Error().Err(err).Msg("Error in UpdateRates")
 		return fiber.NewError(fiber.StatusBadGateway)

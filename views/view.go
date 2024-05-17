@@ -7,7 +7,10 @@ import (
 )
 
 type View struct {
-	Ctx *fiber.Ctx
-	MSQ services.Database
-	App *fiber.App
+	Ctx          *fiber.Ctx
+	ratesService services.RatesService
+}
+
+func NewView(ctx *fiber.Ctx, ratesService services.RatesService) *View {
+	return &View{Ctx: ctx, ratesService: ratesService}
 }

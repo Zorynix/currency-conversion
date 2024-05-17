@@ -1,44 +1,42 @@
 package routes
 
 import (
-	"context"
+	"currency-conversion/repo"
 	"currency-conversion/services"
+	"currency-conversion/views"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog/log"
 )
 
-type RouterHead struct {
-	MSQ  services.Database
-	Addr *string
-}
-
 type Router struct {
-	Router *fiber.App
-	MSQ    services.Database
+	App          *fiber.App
+	ratesService services.RatesService
 }
 
-type Route struct {
-	Group fiber.Router
-	MSQ   services.Database
+func NewRouter(app *fiber.App, db services.Database) *Router {
+	currencyRepo := repo.NewCurrencyRepo(db.(*services.Mysql).DB)
+	exchangeRatesRepo := repo.NewExchangeRatesRepo(db.(*services.Mysql).DB)
+	rateHistoriesRepo := repo.NewRateHistoriesRepo(db.(*services.Mysql).DB)
+
+	ratesService := services.NewRatesService(db, currencyRepo, exchangeRatesRepo, rateHistoriesRepo)
+	return &Router{App: app, ratesService: ratesService}
 }
 
-func Routes(addr *string) {
+func (r *Router) SetupRoutes() {
+	v1 := r.App.Group("/v1")
 
-	mysql, err := services.NewMySQL(context.Background())
-	if err != nil {
-		log.Fatal().Err(err)
-	}
+	v1.Get("/rates", func(c *fiber.Ctx) error {
+		view := views.NewView(c, r.ratesService)
+		return view.ExchangeRateView()
+	})
 
-	router := fiber.New()
+	v1.Get("/currencies", func(c *fiber.Ctx) error {
+		view := views.NewView(c, r.ratesService)
+		return view.CurrenciesView()
+	})
 
-	route := Router{Router: router, MSQ: mysql}
-
-	route.V1Routes()
-
-	log.Info().Msgf("Starting server on port %d...", 8000)
-	if err := router.Listen(":8000"); err != nil {
-		log.Fatal().Err(err).Msg("Can not start http server")
-	}
-
+	v1.Get("/update", func(c *fiber.Ctx) error {
+		view := views.NewView(c, r.ratesService)
+		return view.RateHistoryView()
+	})
 }
