@@ -2,34 +2,34 @@ package views
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 )
 
 func (view *View) CurrenciesView() error {
-	log.Info().Msg("CurrenciesView called")
+	logrus.Info("CurrenciesView called")
 	data, err := view.ratesService.AddCurrencies()
 	if err != nil {
-		log.Error().Err(err).Msg("AddCurrencies")
+		logrus.Errorf("Failed to add currencies: %v", err)
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 	return view.Ctx.JSON(*data)
 }
 
 func (view *View) ExchangeRateView() error {
-	log.Info().Msg("ExchangeRateView called")
+	logrus.Info("ExchangeRateView called")
 	data, err := view.ratesService.AddRates()
 	if err != nil {
-		log.Error().Err(err).Msg("Error in AddRates")
+		logrus.Errorf("Error in AddRates: %v", err)
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 	return view.Ctx.JSON(*data)
 }
 
 func (view *View) RateHistoryView() error {
-	log.Info().Msg("RateHistoryView called")
+	logrus.Info("RateHistoryView called")
 	message, err := view.ratesService.UpdateRates()
 	if err != nil {
-		log.Error().Err(err).Msg("Error in UpdateRates")
+		logrus.Errorf("Error in UpdateRates: %v", err)
 		return fiber.NewError(fiber.StatusBadGateway)
 	}
 	return view.Ctx.SendString(message)

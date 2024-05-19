@@ -3,15 +3,18 @@ package utils
 import (
 	"os"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/rs/zerolog/pkgerrors"
+	"github.com/sirupsen/logrus"
 )
 
-func InitLogger() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+func InitLogger(logLevel string) {
+	level, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		logrus.Fatalf("Invalid log level: %v", err)
+	}
 
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+	logrus.SetOutput(os.Stdout)
+	logrus.SetLevel(level)
 }

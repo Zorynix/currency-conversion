@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 )
 
@@ -58,10 +58,10 @@ func (c *HttpClient) FastGet(requestURI string) (*fasthttp.Response, error) {
 
 	if c.Debug {
 		request.Header.VisitAll(func(key, value []byte) {
-			log.Debug().Caller().Interface("Http-Client-Request", map[string]string{
+			logrus.WithFields(logrus.Fields{
 				"Transaction-ID": c.TransactionID,
 				string(key):      string(value),
-			})
+			}).Debug("Http-Client-Request")
 		})
 	}
 
@@ -78,13 +78,13 @@ func (c *HttpClient) FastGet(requestURI string) (*fasthttp.Response, error) {
 	if c.Debug {
 		elapsed := time.Since(t1)
 		response.Header.VisitAll(func(key, value []byte) {
-			log.Debug().Caller().Interface("Http-Client-Response", map[string]string{
+			logrus.WithFields(logrus.Fields{
 				"Transaction-ID": c.TransactionID,
 				"elapsed":        elapsed.String(),
 				"Status-Code":    strconv.Itoa(response.StatusCode()),
 				string(key):      string(value),
 				"payload":        string(response.Body()),
-			})
+			}).Debug("Http-Client-Response")
 		})
 
 	}

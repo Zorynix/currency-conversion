@@ -4,7 +4,7 @@ import (
 	"currency-conversion/dto"
 	"currency-conversion/models"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -23,10 +23,10 @@ func NewExchangeRatesRepo(db *gorm.DB) ExchangeRatesRepo {
 }
 
 func (r *exchangeRatesRepo) GetExchangeRates() (*dto.ExchangeRates, error) {
-	log.Info().Msg("GetExchangeRates called")
+	logrus.Info("GetExchangeRates called")
 	var exchangeRates []models.ExchangeRates
 	if err := r.DB.Find(&exchangeRates).Error; err != nil {
-		log.Error().Err(err).Msg("Failed to fetch exchange rates from database")
+		logrus.Errorf("Failed to fetch exchange rates from database: %v", err)
 		return nil, err
 	}
 
@@ -36,31 +36,31 @@ func (r *exchangeRatesRepo) GetExchangeRates() (*dto.ExchangeRates, error) {
 	}
 
 	data := &dto.ExchangeRates{Data: ratesMap}
-	log.Debug().Interface("ExchangeRatesData", data).Msg("Successfully fetched exchange rates data")
+	logrus.WithField("ExchangeRatesData", data).Debug("Successfully fetched exchange rates data")
 	return data, nil
 }
 
 func (r *exchangeRatesRepo) AddRates(data *dto.ExchangeRates) error {
-	log.Info().Msg("AddRates called")
+	logrus.Info("AddRates called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {
-		log.Error().Err(tx.Error).Msg("Failed to begin transaction")
+		logrus.Errorf("Failed to begin transaction: %v", tx.Error)
 		return tx.Error
 	}
 
 	for _, rate := range data.Data {
 		if err := tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(&rate).Error; err != nil {
 			tx.Rollback()
-			log.Error().Err(err).Msg("Failed to add or update exchange rate")
+			logrus.Errorf("Failed to add or update exchange rate: %v", err)
 			return err
 		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Error().Err(err).Msg("Failed to commit transaction")
+		logrus.Errorf("Failed to commit transaction: %v", err)
 		return err
 	}
 
-	log.Info().Msg("Exchange rates data inserted or updated in database successfully")
+	logrus.Info("Exchange rates data inserted or updated in database successfully")
 	return nil
 }

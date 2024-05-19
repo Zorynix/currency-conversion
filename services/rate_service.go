@@ -1,14 +1,14 @@
 package services
 
 import (
+	"currency-conversion/config"
 	"currency-conversion/dto"
 	"currency-conversion/repo"
 	"currency-conversion/utils"
 	"encoding/json"
 	"fmt"
-	"os"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 )
 
 type RatesService interface {
@@ -36,95 +36,93 @@ func NewRatesService(db Database, currencyRepo repo.CurrencyRepo, exchangeRatesR
 }
 
 func (s *ratesService) GetCurrencies() (*dto.Currencies, error) {
-	log.Info().Msg("GetCurrencies called")
-	utils.LoadEnv()
+	logrus.Info("GetCurrencies called")
 	client := utils.Default()
-	client.PrivateToken = os.Getenv("API_KEY")
+	client.PrivateToken = config.Cfg.APIKey
 
-	res, err := client.FastGet(os.Getenv("url_all_currencies"))
+	res, err := client.FastGet(config.Cfg.URLs.AllCurrencies)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to make request to API")
+		logrus.Errorf("Failed to make request to API: %v", err)
 		return nil, fmt.Errorf("error when creating a request: %s", err)
 	}
 
 	var data dto.Currencies
 	if err := json.Unmarshal(res.Body(), &data); err != nil {
-		log.Error().Err(err).Msg("JSON parsing failed")
+		logrus.Errorf("JSON parsing failed: %v", err)
 		return nil, fmt.Errorf("error during JSON parsing: %s", err)
 	}
 
-	log.Debug().Interface("CurrenciesData", data).Msg("Successfully fetched and parsed currencies data")
+	logrus.Debugf("Successfully fetched and parsed currencies data: %v", data)
 	return &data, nil
 }
 
 func (s *ratesService) AddCurrencies() (*dto.Currencies, error) {
-	log.Info().Msg("AddCurrencies called")
+	logrus.Info("AddCurrencies called")
 	data, err := s.GetCurrencies()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch currencies")
+		logrus.Errorf("Failed to fetch currencies: %v", err)
 		return nil, fmt.Errorf("error fetching currencies: %s", err)
 	}
 
 	if err := s.currencyRepo.AddCurrencies(data); err != nil {
-		log.Error().Err(err).Msg("Failed to add or update currency")
+		logrus.Errorf("Failed to add or update currency: %v", err)
 		return nil, fmt.Errorf("error adding or updating currency: %s", err)
 	}
 
-	log.Info().Msg("Currencies data added or updated successfully")
+	logrus.Info("Currencies data added or updated successfully")
 	return data, nil
 }
 
 func (s *ratesService) GetExchangeRates() (*dto.ExchangeRates, error) {
-	log.Info().Msg("GetExchangeRates called")
-	utils.LoadEnv()
+	logrus.Info("GetExchangeRates called")
 	client := utils.Default()
-	client.PrivateToken = os.Getenv("API_KEY")
+	client.PrivateToken = config.Cfg.APIKey
 
-	res, err := client.FastGet(os.Getenv("url_latest_exchange_rates"))
+	res, err := client.FastGet(config.Cfg.URLs.LatestExchangeRates)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to make request to API")
+		logrus.Errorf("Failed to make request to API: %v", err)
 		return nil, fmt.Errorf("error when creating a request: %s", err)
 	}
 
 	var data dto.ExchangeRates
 	if err := json.Unmarshal(res.Body(), &data); err != nil {
-		log.Error().Err(err).Msg("JSON parsing failed")
+		logrus.Errorf("JSON parsing failed: %v", err)
 		return nil, fmt.Errorf("error during JSON parsing: %s", err)
 	}
 
-	log.Debug().Interface("ExchangeRatesData", data).Msg("Successfully fetched and parsed exchange rates data")
+	logrus.Debugf("Successfully fetched and parsed exchange rates data: %v", data)
 	return &data, nil
 }
 
 func (s *ratesService) AddRates() (*dto.ExchangeRates, error) {
-	log.Info().Msg("AddRates called")
+	logrus.Info("AddRates called")
 	data, err := s.GetExchangeRates()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch exchange rates")
+		logrus.Errorf("Failed to fetch exchange rates: %v", err)
 		return nil, fmt.Errorf("error fetching exchange rates: %s", err)
 	}
 
 	if err := s.exchangeRatesRepo.AddRates(data); err != nil {
-		log.Error().Err(err).Msg("Failed to add or update exchange rates")
+		logrus.Errorf("Failed to add or update exchange rates: %v", err)
 		return nil, fmt.Errorf("error adding or updating exchange rates: %s", err)
 	}
 
-	log.Info().Msg("Exchange rates data added or updated successfully")
+	logrus.Info("Exchange rates data added or updated successfully")
 	return data, nil
 }
 
 func (s *ratesService) UpdateRates() (string, error) {
-	log.Info().Msg("UpdateRates called")
+	logrus.Info("UpdateRates called")
 	if err := s.rateHistoriesRepo.UpdateRatesHistories(); err != nil {
-		log.Error().Err(err).Msg("Failed to update exchange rate histories")
+		logrus.Errorf("Failed to update exchange rate histories: %v", err)
 		return "", fmt.Errorf("error updating exchange rate histories: %s", err)
 	}
 
 	if _, err := s.AddRates(); err != nil {
-		log.Error().Err(err).Msg("Failed to insert latest exchange rates")
+		logrus.Errorf("Failed to insert latest exchange rates: %v", err)
 		return "", fmt.Errorf("error inserting latest exchange rates: %s", err)
 	}
 
-	log.Info().Msg("Exchange rates updated successfully")
+	logrus.Info("Exchange rates updated successfully")
 	return "Exchange rates updated successfully", nil
 }

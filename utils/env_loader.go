@@ -1,13 +1,12 @@
 package utils
 
 import (
-	"github.com/rs/zerolog/log"
-
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 func LoadEnv() {
 	if err := godotenv.Load(); err != nil {
-		log.Panic().Msg("---failed to load .env file---")
+		logrus.Panic("---failed to load .env file---")
 	}
 }

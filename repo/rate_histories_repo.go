@@ -3,7 +3,7 @@ package repo
 import (
 	"currency-conversion/models"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -20,27 +20,27 @@ func NewRateHistoriesRepo(db *gorm.DB) RateHistoriesRepo {
 }
 
 func (r *rateHistoriesRepo) UpdateRatesHistories() error {
-	log.Info().Msg("UpdateRatesHistories called")
+	logrus.Info("UpdateRatesHistories called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {
-		log.Error().Err(tx.Error).Msg("Failed to begin transaction")
+		logrus.Errorf("Failed to begin transaction: %v", tx.Error)
 		return tx.Error
 	}
 
 	var count int64
 	if err := tx.Model(&models.ExchangeRates{}).Count(&count).Error; err != nil {
 		tx.Rollback()
-		log.Error().Err(err).Msg("Failed to count exchange rates")
+		logrus.Errorf("Failed to count exchange rates: %v", err)
 		return err
 	}
 
 	if count == 0 {
 		if err := tx.Exec("INSERT INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil {
 			tx.Rollback()
-			log.Error().Err(err).Msg("Failed to insert initial exchange rate histories")
+			logrus.Errorf("Failed to insert initial exchange rate histories: %v", err)
 			return err
 		}
-		log.Info().Msg("Initial exchange rate histories inserted successfully")
+		logrus.Info("Initial exchange rate histories inserted successfully")
 	} else {
 		if err := tx.Exec(`INSERT INTO exchange_rate_histories(code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at)
 			SELECT code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at
@@ -52,17 +52,17 @@ func (r *rateHistoriesRepo) UpdateRatesHistories() error {
 				updated_at = VALUES(updated_at)
 		`).Error; err != nil {
 			tx.Rollback()
-			log.Error().Err(err).Msg("Failed to update exchange rate histories")
+			logrus.Errorf("Failed to update exchange rate histories: %v", err)
 			return err
 		}
-		log.Info().Msg("Exchange rate histories updated successfully")
+		logrus.Info("Exchange rate histories updated successfully")
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Error().Err(err).Msg("Failed to commit transaction")
+		logrus.Errorf("Failed to commit transaction: %v", err)
 		return err
 	}
 
-	log.Info().Msg("Rates histories transaction committed successfully")
+	logrus.Info("Rates histories transaction committed successfully")
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"currency-conversion/views"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
 )
 
 type Router struct {
@@ -26,17 +27,38 @@ func (r *Router) SetupRoutes() {
 	v1 := r.App.Group("/v1")
 
 	v1.Get("/rates", func(c *fiber.Ctx) error {
+		logrus.Info("GET /v1/rates called")
 		view := views.NewView(c, r.ratesService)
-		return view.ExchangeRateView()
+		err := view.ExchangeRateView()
+		if err != nil {
+			logrus.Errorf("Error in ExchangeRateView: %v", err)
+			return err
+		}
+		logrus.Info("GET /v1/rates successful")
+		return nil
 	})
 
 	v1.Get("/currencies", func(c *fiber.Ctx) error {
+		logrus.Info("GET /v1/currencies called")
 		view := views.NewView(c, r.ratesService)
-		return view.CurrenciesView()
+		err := view.CurrenciesView()
+		if err != nil {
+			logrus.Errorf("Error in CurrenciesView: %v", err)
+			return err
+		}
+		logrus.Info("GET /v1/currencies successful")
+		return nil
 	})
 
 	v1.Get("/update", func(c *fiber.Ctx) error {
+		logrus.Info("GET /v1/update called")
 		view := views.NewView(c, r.ratesService)
-		return view.RateHistoryView()
+		err := view.RateHistoryView()
+		if err != nil {
+			logrus.Errorf("Error in RateHistoryView: %v", err)
+			return err
+		}
+		logrus.Info("GET /v1/update successful")
+		return nil
 	})
 }

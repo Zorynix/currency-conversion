@@ -2,28 +2,35 @@ package main
 
 import (
 	"context"
+	"currency-conversion/config"
 	"currency-conversion/routes"
 	"currency-conversion/services"
 	"currency-conversion/utils"
 	"flag"
+	"log"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	addr = flag.String("addr", ":8000", "TCP address to listen to")
+	addr       = flag.String("addr", ":8000", "TCP address to listen to")
+	configPath = flag.String("config", "config/config.yaml", "Path to config file")
 )
 
 func main() {
 	flag.Parse()
 
-	utils.InitLogger()
-
-	mysqlService, err := services.NewMySQL(context.Background())
+	err := config.LoadConfig(*configPath)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize MySQL service")
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	utils.InitLogger(config.Cfg.LogLevel)
+
+	mysqlService, err := services.NewMySQL(context.Background(), config.Cfg.DSN)
+	if err != nil {
+		logrus.Fatalf("Failed to initialize MySQL service: %v", err)
 	}
 
 	app := fiber.New()
@@ -31,8 +38,8 @@ func main() {
 	router := routes.NewRouter(app, mysqlService)
 	router.SetupRoutes()
 
-	log.Info().Msgf("Starting server on %s...", *addr)
+	logrus.Infof("Starting server on %s...", *addr)
 	if err := app.Listen(*addr); err != nil {
-		log.Fatal().Err(err).Msg("Failed to start HTTP server")
+		logrus.Fatalf("Failed to start HTTP server: %v", err)
 	}
 }

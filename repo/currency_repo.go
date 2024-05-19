@@ -4,7 +4,7 @@ import (
 	"currency-conversion/dto"
 	"currency-conversion/models"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -23,10 +23,10 @@ func NewCurrencyRepo(db *gorm.DB) CurrencyRepo {
 }
 
 func (r *currencyRepo) GetCurrencies() (*dto.Currencies, error) {
-	log.Info().Msg("GetCurrencies called")
+	logrus.Info("GetCurrencies called")
 	var currencies []models.Currency
 	if err := r.DB.Find(&currencies).Error; err != nil {
-		log.Error().Err(err).Msg("Failed to fetch currencies from database")
+		logrus.Errorf("Failed to fetch currencies from database: %v", err)
 		return nil, err
 	}
 
@@ -36,31 +36,31 @@ func (r *currencyRepo) GetCurrencies() (*dto.Currencies, error) {
 	}
 
 	data := &dto.Currencies{Data: currencyMap}
-	log.Debug().Interface("CurrenciesData", data).Msg("Successfully fetched currencies data")
+	logrus.WithField("CurrenciesData", data).Debug("Successfully fetched currencies data")
 	return data, nil
 }
 
 func (r *currencyRepo) AddCurrencies(data *dto.Currencies) error {
-	log.Info().Msg("AddCurrencies called")
+	logrus.Info("AddCurrencies called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {
-		log.Error().Err(tx.Error).Msg("Failed to begin transaction")
+		logrus.Errorf("Failed to begin transaction: %v", tx.Error)
 		return tx.Error
 	}
 
 	for _, value := range data.Data {
 		if err := tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(&value).Error; err != nil {
 			tx.Rollback()
-			log.Error().Err(err).Msg("Failed to add or update currency")
+			logrus.Errorf("Failed to add or update currency: %v", err)
 			return err
 		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		log.Error().Err(err).Msg("Failed to commit transaction")
+		logrus.Errorf("Failed to commit transaction: %v", err)
 		return err
 	}
 
-	log.Info().Msg("Currencies data inserted or updated in database successfully")
+	logrus.Info("Currencies data inserted or updated in database successfully")
 	return nil
 }

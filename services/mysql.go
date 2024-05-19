@@ -2,11 +2,9 @@ package services
 
 import (
 	"context"
-	"currency-conversion/utils"
 	"database/sql"
-	"os"
 
-	"github.com/rs/zerolog/log"
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -15,14 +13,10 @@ type Mysql struct {
 	DB *gorm.DB
 }
 
-func NewMySQL(ctx context.Context) (*Mysql, error) {
-
-	utils.LoadEnv()
-
-	dsn := os.Getenv("DSN")
+func NewMySQL(ctx context.Context, dsn string) (*Mysql, error) {
 	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to open SQL connection")
+		logrus.Errorf("Failed to open SQL connection: %v", err)
 		return nil, err
 	}
 
@@ -30,7 +24,7 @@ func NewMySQL(ctx context.Context) (*Mysql, error) {
 		Conn: sqlDB,
 	}), &gorm.Config{})
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to initialize Gorm")
+		logrus.Errorf("Failed to initialize Gorm: %v", err)
 		return nil, err
 	}
 
