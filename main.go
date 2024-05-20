@@ -7,7 +7,6 @@ import (
 	"currency-conversion/services"
 	"currency-conversion/utils"
 	"flag"
-	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -23,7 +22,7 @@ func main() {
 
 	err := config.LoadConfig(*configPath)
 	if err != nil {
-		log.Fatalf("failed to load config: %v", err)
+		logrus.Fatalf("failed to load config: %v", err)
 	}
 
 	utils.InitLogger(config.Cfg.LogLevel)
