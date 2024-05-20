@@ -1,0 +1,17 @@
+image: golang:1.22
+
+pipelines:
+  default:
+    - parallel:
+      - step: 
+          name: Test and build
+          script:
+            - mkdir test-reports
+            - go get .
+            - go build -v ./...
+            - go test -v ./...
+      - step:
+          name: Lint code
+          image: golangci/golangci-lint:v1.56.0
+          script:
+            - golangci-lint run -v
