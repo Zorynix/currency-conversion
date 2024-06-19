@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"currency-conversion/repo"
-	"currency-conversion/services"
-	"currency-conversion/views"
+	"currency-conversion/internal/repo/mysql"
+	"currency-conversion/internal/services"
+	"currency-conversion/internal/views"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -15,9 +15,9 @@ type Router struct {
 }
 
 func NewRouter(app *fiber.App, db services.Database) *Router {
-	currencyRepo := repo.NewCurrencyRepo(db.(*services.Mysql).DB)
-	exchangeRatesRepo := repo.NewExchangeRatesRepo(db.(*services.Mysql).DB)
-	rateHistoriesRepo := repo.NewRateHistoriesRepo(db.(*services.Mysql).DB)
+	currencyRepo := mysql.NewCurrencyRepo(db.(*services.Mysql).DB)
+	exchangeRatesRepo := mysql.NewExchangeRatesRepo(db.(*services.Mysql).DB)
+	rateHistoriesRepo := mysql.NewRateHistoriesRepo(db.(*services.Mysql).DB)
 
 	ratesService := services.NewRatesService(db, currencyRepo, exchangeRatesRepo, rateHistoriesRepo)
 	return &Router{App: app, ratesService: ratesService}

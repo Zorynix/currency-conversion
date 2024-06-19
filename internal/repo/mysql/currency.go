@@ -1,36 +1,32 @@
-package repo
+package mysql
 
 import (
-	"currency-conversion/dto"
-	"currency-conversion/models"
+	"context"
+	"currency-conversion/internal/dto"
+	"currency-conversion/internal/entity"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type CurrencyRepo interface {
-	GetCurrencies() (*dto.Currencies, error)
-	AddCurrencies(data *dto.Currencies) error
-}
-
 type currencyRepo struct {
 	DB *gorm.DB
 }
 
-func NewCurrencyRepo(db *gorm.DB) CurrencyRepo {
+func NewCurrencyRepo(db *gorm.DB) *currencyRepo {
 	return &currencyRepo{DB: db}
 }
 
-func (r *currencyRepo) GetCurrencies() (*dto.Currencies, error) {
+func (r *currencyRepo) GetCurrencies(ctx context.Context) (*dto.Currencies, error) {
 	logrus.Info("GetCurrencies called")
-	var currencies []models.Currency
+	var currencies []entity.Currency
 	if err := r.DB.Find(&currencies).Error; err != nil {
 		logrus.Errorf("Failed to fetch currencies from database: %v", err)
 		return nil, err
 	}
 
-	currencyMap := make(map[string]models.Currency)
+	currencyMap := make(map[string]entity.Currency)
 	for _, currency := range currencies {
 		currencyMap[currency.Code] = currency
 	}
@@ -40,7 +36,7 @@ func (r *currencyRepo) GetCurrencies() (*dto.Currencies, error) {
 	return data, nil
 }
 
-func (r *currencyRepo) AddCurrencies(data *dto.Currencies) error {
+func (r *currencyRepo) AddCurrencies(ctx context.Context, data *dto.Currencies) error {
 	logrus.Info("AddCurrencies called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {

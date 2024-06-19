@@ -1,7 +1,7 @@
 package views
 
 import (
-	"currency-conversion/services"
+	"currency-conversion/internal/services"
 
 	"github.com/gofiber/fiber/v2"
 )

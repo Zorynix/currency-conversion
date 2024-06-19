@@ -1,32 +1,25 @@
 package services
 
 import (
+	"context"
 	"currency-conversion/config"
-	"currency-conversion/dto"
-	"currency-conversion/repo"
-	"currency-conversion/utils"
+	"currency-conversion/internal/dto"
+	"currency-conversion/internal/repo"
+	"currency-conversion/pkg/httpclient"
 	"encoding/json"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
 )
 
-type RatesService interface {
-	GetCurrencies() (*dto.Currencies, error)
-	AddCurrencies() (*dto.Currencies, error)
-	GetExchangeRates() (*dto.ExchangeRates, error)
-	AddRates() (*dto.ExchangeRates, error)
-	UpdateRates() (string, error)
-}
-
 type ratesService struct {
 	db                Database
-	currencyRepo      repo.CurrencyRepo
-	exchangeRatesRepo repo.ExchangeRatesRepo
-	rateHistoriesRepo repo.RateHistoriesRepo
+	currencyRepo      repo.Currency
+	exchangeRatesRepo repo.ExchangeRates
+	rateHistoriesRepo repo.RateHistories
 }
 
-func NewRatesService(db Database, currencyRepo repo.CurrencyRepo, exchangeRatesRepo repo.ExchangeRatesRepo, rateHistoriesRepo repo.RateHistoriesRepo) RatesService {
+func NewRatesService(db Database, currencyRepo repo.Currency, exchangeRatesRepo repo.ExchangeRates, rateHistoriesRepo repo.RateHistories) RatesService {
 	return &ratesService{
 		db:                db,
 		currencyRepo:      currencyRepo,
@@ -35,9 +28,9 @@ func NewRatesService(db Database, currencyRepo repo.CurrencyRepo, exchangeRatesR
 	}
 }
 
-func (s *ratesService) GetCurrencies() (*dto.Currencies, error) {
+func (s *ratesService) GetCurrencies(ctx context.Context) (*dto.Currencies, error) {
 	logrus.Info("GetCurrencies called")
-	client := utils.Default()
+	client := httpclient.Default()
 	client.PrivateToken = config.Cfg.APIKey
 
 	res, err := client.FastGet(config.Cfg.URLs.AllCurrencies)
@@ -56,15 +49,15 @@ func (s *ratesService) GetCurrencies() (*dto.Currencies, error) {
 	return &data, nil
 }
 
-func (s *ratesService) AddCurrencies() (*dto.Currencies, error) {
+func (s *ratesService) AddCurrencies(ctx context.Context) (*dto.Currencies, error) {
 	logrus.Info("AddCurrencies called")
-	data, err := s.GetCurrencies()
+	data, err := s.GetCurrencies(ctx)
 	if err != nil {
 		logrus.Errorf("Failed to fetch currencies: %v", err)
 		return nil, fmt.Errorf("error fetching currencies: %s", err)
 	}
 
-	if err := s.currencyRepo.AddCurrencies(data); err != nil {
+	if err := s.currencyRepo.AddCurrencies(ctx, data); err != nil {
 		logrus.Errorf("Failed to add or update currency: %v", err)
 		return nil, fmt.Errorf("error adding or updating currency: %s", err)
 	}
@@ -73,9 +66,9 @@ func (s *ratesService) AddCurrencies() (*dto.Currencies, error) {
 	return data, nil
 }
 
-func (s *ratesService) GetExchangeRates() (*dto.ExchangeRates, error) {
+func (s *ratesService) GetExchangeRates(ctx context.Context) (*dto.ExchangeRates, error) {
 	logrus.Info("GetExchangeRates called")
-	client := utils.Default()
+	client := httpclient.Default()
 	client.PrivateToken = config.Cfg.APIKey
 
 	res, err := client.FastGet(config.Cfg.URLs.LatestExchangeRates)
@@ -94,15 +87,15 @@ func (s *ratesService) GetExchangeRates() (*dto.ExchangeRates, error) {
 	return &data, nil
 }
 
-func (s *ratesService) AddRates() (*dto.ExchangeRates, error) {
+func (s *ratesService) AddRates(ctx context.Context) (*dto.ExchangeRates, error) {
 	logrus.Info("AddRates called")
-	data, err := s.GetExchangeRates()
+	data, err := s.GetExchangeRates(ctx)
 	if err != nil {
 		logrus.Errorf("Failed to fetch exchange rates: %v", err)
 		return nil, fmt.Errorf("error fetching exchange rates: %s", err)
 	}
 
-	if err := s.exchangeRatesRepo.AddRates(data); err != nil {
+	if err := s.exchangeRatesRepo.AddRates(ctx, data); err != nil {
 		logrus.Errorf("Failed to add or update exchange rates: %v", err)
 		return nil, fmt.Errorf("error adding or updating exchange rates: %s", err)
 	}
@@ -111,14 +104,14 @@ func (s *ratesService) AddRates() (*dto.ExchangeRates, error) {
 	return data, nil
 }
 
-func (s *ratesService) UpdateRates() (string, error) {
+func (s *ratesService) UpdateRates(ctx context.Context) (string, error) {
 	logrus.Info("UpdateRates called")
-	if err := s.rateHistoriesRepo.UpdateRatesHistories(); err != nil {
+	if err := s.rateHistoriesRepo.UpdateRatesHistories(ctx); err != nil {
 		logrus.Errorf("Failed to update exchange rate histories: %v", err)
 		return "", fmt.Errorf("error updating exchange rate histories: %s", err)
 	}
 
-	if _, err := s.AddRates(); err != nil {
+	if _, err := s.AddRates(ctx); err != nil {
 		logrus.Errorf("Failed to insert latest exchange rates: %v", err)
 		return "", fmt.Errorf("error inserting latest exchange rates: %s", err)
 	}

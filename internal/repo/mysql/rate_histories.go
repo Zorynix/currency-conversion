@@ -1,25 +1,22 @@
-package repo
+package mysql
 
 import (
-	"currency-conversion/models"
+	"context"
+	"currency-conversion/internal/entity"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
-type RateHistoriesRepo interface {
-	UpdateRatesHistories() error
-}
-
 type rateHistoriesRepo struct {
 	DB *gorm.DB
 }
 
-func NewRateHistoriesRepo(db *gorm.DB) RateHistoriesRepo {
+func NewRateHistoriesRepo(db *gorm.DB) *rateHistoriesRepo {
 	return &rateHistoriesRepo{DB: db}
 }
 
-func (r *rateHistoriesRepo) UpdateRatesHistories() error {
+func (r *rateHistoriesRepo) UpdateRatesHistories(ctx context.Context) error {
 	logrus.Info("UpdateRatesHistories called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {
@@ -28,7 +25,7 @@ func (r *rateHistoriesRepo) UpdateRatesHistories() error {
 	}
 
 	var count int64
-	if err := tx.Model(&models.ExchangeRates{}).Count(&count).Error; err != nil {
+	if err := tx.Model(&entity.ExchangeRates{}).Count(&count).Error; err != nil {
 		tx.Rollback()
 		logrus.Errorf("Failed to count exchange rates: %v", err)
 		return err

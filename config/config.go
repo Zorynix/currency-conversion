@@ -11,11 +11,16 @@ type Config struct {
 	APIKey   string `mapstructure:"api_key"`
 	URLs     URLs   `mapstructure:"urls"`
 	LogLevel string `mapstructure:"log_level"`
+	Server   Server `mapstructure:"server"`
 }
 
 type URLs struct {
 	AllCurrencies       string `mapstructure:"all_currencies"`
 	LatestExchangeRates string `mapstructure:"latest_exchange_rates"`
+}
+
+type Server struct {
+	Address string `mapstructure:"address"`
 }
 
 var Cfg *Config

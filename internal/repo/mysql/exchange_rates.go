@@ -1,36 +1,32 @@
-package repo
+package mysql
 
 import (
-	"currency-conversion/dto"
-	"currency-conversion/models"
+	"context"
+	"currency-conversion/internal/dto"
+	"currency-conversion/internal/entity"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type ExchangeRatesRepo interface {
-	GetExchangeRates() (*dto.ExchangeRates, error)
-	AddRates(data *dto.ExchangeRates) error
-}
-
 type exchangeRatesRepo struct {
 	DB *gorm.DB
 }
 
-func NewExchangeRatesRepo(db *gorm.DB) ExchangeRatesRepo {
+func NewExchangeRatesRepo(db *gorm.DB) *exchangeRatesRepo {
 	return &exchangeRatesRepo{DB: db}
 }
 
-func (r *exchangeRatesRepo) GetExchangeRates() (*dto.ExchangeRates, error) {
+func (r *exchangeRatesRepo) GetExchangeRates(ctx context.Context) (*dto.ExchangeRates, error) {
 	logrus.Info("GetExchangeRates called")
-	var exchangeRates []models.ExchangeRates
+	var exchangeRates []entity.ExchangeRates
 	if err := r.DB.Find(&exchangeRates).Error; err != nil {
 		logrus.Errorf("Failed to fetch exchange rates from database: %v", err)
 		return nil, err
 	}
 
-	ratesMap := make(map[string]models.ExchangeRates)
+	ratesMap := make(map[string]entity.ExchangeRates)
 	for _, rate := range exchangeRates {
 		ratesMap[rate.Code] = rate
 	}
@@ -40,7 +36,7 @@ func (r *exchangeRatesRepo) GetExchangeRates() (*dto.ExchangeRates, error) {
 	return data, nil
 }
 
-func (r *exchangeRatesRepo) AddRates(data *dto.ExchangeRates) error {
+func (r *exchangeRatesRepo) AddRates(ctx context.Context, data *dto.ExchangeRates) error {
 	logrus.Info("AddRates called")
 	tx := r.DB.Begin()
 	if tx.Error != nil {
