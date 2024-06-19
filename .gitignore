@@ -10,10 +10,14 @@
 *.so
 *.dylib
 .env
+.yaml
+*.yaml
 .air.toml
 .air
 tmp
 .tmp
+.log
+*.log
 # Test binary, built with `go test -c`
 *.test
 .vscode
@@ -25,3 +29,6 @@ tmp
 
 # Go workspace file
 go.work
+
+# Configuration files
+config/config.yaml
