@@ -7,7 +7,7 @@ pipelines:
           name: Test and build
           script:
             - mkdir test-reports
-            - go get .
+            - go mod download
             - go build -v ./...
             - go test -v ./...
       - step:
