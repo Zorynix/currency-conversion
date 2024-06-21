@@ -28,7 +28,6 @@ type Repositories struct {
 	RateHistories
 }
 
-// NewRepositories создает новые репозитории и возвращает указатель на структуру Repositories
 func NewRepositories(db *gorm.DB) *Repositories {
 	return &Repositories{
 		Currency:      mysql.NewCurrencyRepo(db),
