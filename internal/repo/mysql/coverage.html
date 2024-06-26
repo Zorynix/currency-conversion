@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>mysql: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">currency-conversion/internal/repo/mysql/currency.go (66.7%)</option>
+				
+				<option value="file1">currency-conversion/internal/repo/mysql/exchange_rates.go (3.7%)</option>
+				
+				<option value="file2">currency-conversion/internal/repo/mysql/rate_histories.go (3.7%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package mysql
+
+import (
+        "context"
+        "currency-conversion/internal/dto"
+        "currency-conversion/internal/entity"
+
+        "github.com/sirupsen/logrus"
+        "gorm.io/gorm"
+        "gorm.io/gorm/clause"
+)
+
+type currencyRepo struct {
+        DB *gorm.DB
+}
+
+func NewCurrencyRepo(db *gorm.DB) *currencyRepo <span class="cov8" title="1">{
+        return &amp;currencyRepo{DB: db}
+}</span>
+
+func (r *currencyRepo) GetCurrencies(ctx context.Context) (*dto.Currencies, error) <span class="cov8" title="1">{
+        logrus.Info("GetCurrencies called")
+        var currencies []entity.Currency
+        if err := r.DB.Find(&amp;currencies).Error; err != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to fetch currencies from database: %v", err)
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">currencyMap := make(map[string]entity.Currency)
+        for _, currency := range currencies </span><span class="cov8" title="1">{
+                currencyMap[currency.Code] = currency
+        }</span>
+
+        <span class="cov8" title="1">data := &amp;dto.Currencies{Data: currencyMap}
+        logrus.WithField("CurrenciesData", data).Debug("Successfully fetched currencies data")
+        return data, nil</span>
+}
+
+func (r *currencyRepo) AddCurrencies(ctx context.Context, data *dto.Currencies) error <span class="cov8" title="1">{
+        logrus.Info("AddCurrencies called")
+        tx := r.DB.Begin()
+        if tx.Error != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to begin transaction: %v", tx.Error)
+                return tx.Error
+        }</span>
+
+        <span class="cov8" title="1">for _, value := range data.Data </span><span class="cov8" title="1">{
+                if err := tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(&amp;value).Error; err != nil </span><span class="cov0" title="0">{
+                        tx.Rollback()
+                        logrus.Errorf("Failed to add or update currency: %v", err)
+                        return err
+                }</span>
+        }
+
+        <span class="cov8" title="1">if err := tx.Commit().Error; err != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to commit transaction: %v", err)
+                return err
+        }</span>
+
+        <span class="cov8" title="1">logrus.Info("Currencies data inserted or updated in database successfully")
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package mysql
+
+import (
+        "context"
+        "currency-conversion/internal/dto"
+        "currency-conversion/internal/entity"
+
+        "github.com/sirupsen/logrus"
+        "gorm.io/gorm"
+        "gorm.io/gorm/clause"
+)
+
+type exchangeRatesRepo struct {
+        DB *gorm.DB
+}
+
+func NewExchangeRatesRepo(db *gorm.DB) *exchangeRatesRepo <span class="cov8" title="1">{
+        return &amp;exchangeRatesRepo{DB: db}
+}</span>
+
+func (r *exchangeRatesRepo) GetExchangeRates(ctx context.Context) (*dto.ExchangeRates, error) <span class="cov0" title="0">{
+        logrus.Info("GetExchangeRates called")
+        var exchangeRates []entity.ExchangeRates
+        if err := r.DB.Find(&amp;exchangeRates).Error; err != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to fetch exchange rates from database: %v", err)
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">ratesMap := make(map[string]entity.ExchangeRates)
+        for _, rate := range exchangeRates </span><span class="cov0" title="0">{
+                ratesMap[rate.Code] = rate
+        }</span>
+
+        <span class="cov0" title="0">data := &amp;dto.ExchangeRates{Data: ratesMap}
+        logrus.WithField("ExchangeRatesData", data).Debug("Successfully fetched exchange rates data")
+        return data, nil</span>
+}
+
+func (r *exchangeRatesRepo) AddRates(ctx context.Context, data *dto.ExchangeRates) error <span class="cov0" title="0">{
+        logrus.Info("AddRates called")
+        tx := r.DB.Begin()
+        if tx.Error != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to begin transaction: %v", tx.Error)
+                return tx.Error
+        }</span>
+
+        <span class="cov0" title="0">for _, rate := range data.Data </span><span class="cov0" title="0">{
+                if err := tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(&amp;rate).Error; err != nil </span><span class="cov0" title="0">{
+                        tx.Rollback()
+                        logrus.Errorf("Failed to add or update exchange rate: %v", err)
+                        return err
+                }</span>
+        }
+
+        <span class="cov0" title="0">if err := tx.Commit().Error; err != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to commit transaction: %v", err)
+                return err
+        }</span>
+
+        <span class="cov0" title="0">logrus.Info("Exchange rates data inserted or updated in database successfully")
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package mysql
+
+import (
+        "context"
+        "currency-conversion/internal/entity"
+
+        "github.com/sirupsen/logrus"
+        "gorm.io/gorm"
+)
+
+type rateHistoriesRepo struct {
+        DB *gorm.DB
+}
+
+func NewRateHistoriesRepo(db *gorm.DB) *rateHistoriesRepo <span class="cov8" title="1">{
+        return &amp;rateHistoriesRepo{DB: db}
+}</span>
+
+func (r *rateHistoriesRepo) UpdateRatesHistories(ctx context.Context) error <span class="cov0" title="0">{
+        logrus.Info("UpdateRatesHistories called")
+        tx := r.DB.Begin()
+        if tx.Error != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to begin transaction: %v", tx.Error)
+                return tx.Error
+        }</span>
+
+        <span class="cov0" title="0">var count int64
+        if err := tx.Model(&amp;entity.ExchangeRates{}).Count(&amp;count).Error; err != nil </span><span class="cov0" title="0">{
+                tx.Rollback()
+                logrus.Errorf("Failed to count exchange rates: %v", err)
+                return err
+        }</span>
+
+        <span class="cov0" title="0">if count == 0 </span><span class="cov0" title="0">{
+                if err := tx.Exec("INSERT INTO exchange_rate_histories SELECT * FROM exchange_rates").Error; err != nil </span><span class="cov0" title="0">{
+                        tx.Rollback()
+                        logrus.Errorf("Failed to insert initial exchange rate histories: %v", err)
+                        return err
+                }</span>
+                <span class="cov0" title="0">logrus.Info("Initial exchange rate histories inserted successfully")</span>
+        } else<span class="cov0" title="0"> {
+                if err := tx.Exec(`INSERT INTO exchange_rate_histories(code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at)
+                        SELECT code, currency_id, target_currency_id, exchange_rate, rate_source_id, updated_at
+                        FROM exchange_rates
+                        ON DUPLICATE KEY UPDATE
+                                code = VALUES(code),
+                                exchange_rate = VALUES(exchange_rate),
+                                rate_source_id = VALUES(rate_source_id),
+                                updated_at = VALUES(updated_at)
+                `).Error; err != nil </span><span class="cov0" title="0">{
+                        tx.Rollback()
+                        logrus.Errorf("Failed to update exchange rate histories: %v", err)
+                        return err
+                }</span>
+                <span class="cov0" title="0">logrus.Info("Exchange rate histories updated successfully")</span>
+        }
+
+        <span class="cov0" title="0">if err := tx.Commit().Error; err != nil </span><span class="cov0" title="0">{
+                logrus.Errorf("Failed to commit transaction: %v", err)
+                return err
+        }</span>
+
+        <span class="cov0" title="0">logrus.Info("Rates histories transaction committed successfully")
+        return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
