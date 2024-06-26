@@ -14,12 +14,12 @@ services:
       - DB_NAME=razzzila
       - DB_PORT=3306
     volumes:
-      - .:/app
+      - ./node_modules:/app/node_modules
 
   db:
     image: mysql:latest
     ports:
-      - "13306:3306"
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=1234
       - MYSQL_DATABASE=razzzila
