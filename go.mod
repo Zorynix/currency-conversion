@@ -9,7 +9,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/testcontainers/testcontainers-go v0.34.0
-	gorm.io/driver/mysql v1.5.6
+	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12
 )
 
