@@ -13,7 +13,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.31.0
 	go.uber.org/mock v0.5.0
 	gorm.io/driver/mysql v1.5.6
-	gorm.io/gorm v1.25.10
+	gorm.io/gorm v1.25.12
 )
 
 require (
